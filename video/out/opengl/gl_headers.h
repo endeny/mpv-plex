@@ -132,7 +132,7 @@ typedef unsigned int GLenum;
 typedef unsigned int GLuint;
 typedef char GLchar;
 typedef float GLfloat;
-typedef ptrdiff_t GLsizeiptr;
+typedef intptr_t GLsizeiptr;
 typedef intptr_t GLintptr;
 typedef unsigned int GLbitfield;
 typedef int GLint;

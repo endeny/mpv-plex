@@ -151,7 +151,7 @@ main_dependencies = [
         'desc': 'POSIX environment',
         # This should be good enough.
         'func': check_statement(['poll.h', 'unistd.h', 'sys/mman.h'],
-            'struct pollfd pfd; poll(&pfd, 1, 0); fork(); int f[2]; pipe(f); munmap(f,0)'),
+            'struct pollfd pfd; poll(&pfd, 1, 0); int f[2]; pipe(f); munmap(f,0)'),
     }, {
         'name': '--android',
         'desc': 'Android environment',
@@ -772,7 +772,11 @@ video_output_features = [
     } , {
         'name': '--ios-gl',
         'desc': 'iOS OpenGL ES hardware decoding interop support',
-        'func': check_statement('OpenGLES/ES3/glext.h', '(void)GL_RGB32F'),  # arbitrary OpenGL ES 3.0 symbol
+        'func': check_cc(
+            fragment=load_fragment('ios_eagl.m'),
+            framework_name=['OpenGLES'],
+            compile_filename='ios_eagl.m'
+        )
     } , {
         'name': '--plain-gl',
         'desc': 'OpenGL without platform-specific code (e.g. for libmpv)',
