@@ -231,7 +231,7 @@ iconv support use --disable-iconv.",
         'name': 'posix-spawn-native',
         'desc': 'spawnp()/kill() POSIX support',
         'func': check_statement(['spawn.h', 'signal.h'],
-            'posix_spawnp(0,0,0,0,0,0); kill(0,0)'),
+            'posix_spawnp(0,0,0,0,0,0); posix_spawn_file_actions_init(0); kill(0,0)'),
         'deps': '!mingw',
     }, {
         'name': 'posix-spawn-android',
