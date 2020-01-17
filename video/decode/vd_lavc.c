@@ -445,6 +445,8 @@ static void select_and_set_hwdec(struct mp_filter *vd)
         struct hwdec_info *hwdecs = NULL;
         int num_hwdecs = 0;
         add_all_hwdec_methods(&hwdecs, &num_hwdecs);
+        
+        MP_ERR(vd, "SERGIO: Num of available hwdecs: %d\n", num_hwdecs);
 
         ctx->hwdec_requested = true;
 
