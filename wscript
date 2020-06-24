@@ -166,6 +166,13 @@ main_dependencies = [
         # header only, library is dynamically loaded
         'func': check_statement('media/NdkImageReader.h', 'int x = AIMAGE_FORMAT_PRIVATE'),
     }, {
+        'name': '--ios',
+        'desc': 'iOS environment',
+        'func': check_statement(
+            ['TargetConditionals.h', 'assert.h'],
+            'static_assert(TARGET_OS_IPHONE, "TARGET_OS_IPHONE defined to zero!")'
+        ),
+    }, {
         'name': '--tvos',
         'desc': 'tvOS environment',
         'func': check_statement(
@@ -808,6 +815,11 @@ video_output_features = [
         'desc':  'Vulkan context support',
         'deps': 'libplacebo',
         'func': check_pkg_config('vulkan'),
+    }, {
+        'name': '--moltenvk',
+        'desc':  'MoltenVK support',
+        'deps': 'ios || tvos || cocoa',
+        'func': check_cc(header_name=['MoltenVK/mvk_vulkan.h']),
     }, {
         'name': 'vk-khr-display',
         'desc': "VK_KHR_display extension",
