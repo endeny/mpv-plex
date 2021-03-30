@@ -246,6 +246,11 @@ iconv support use --disable-iconv.",
         'deps': 'os-win32 || os-cygwin',
         'func': check_true
     }, {
+        'name': 'fork',
+        'desc': 'fork()',
+        'func': check_statement('unistd.h', 'fork()'),
+        'deps': '!mingw && !tvos',
+    }, {
         'name': 'glob-posix',
         'desc': 'glob() POSIX support',
         'deps': '!(os-win32 || os-cygwin)',
