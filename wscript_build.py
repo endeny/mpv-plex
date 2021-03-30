@@ -244,7 +244,7 @@ def build(ctx):
     ])
 
     subprocess_c = ctx.pick_first_matching_dep([
-        ( "osdep/subprocess-posix.c",            "posix" ),
+        ( "osdep/subprocess-posix.c",            "fork" ),
         ( "osdep/subprocess-win.c",              "win32-desktop" ),
         ( "osdep/subprocess-dummy.c" ),
     ])
