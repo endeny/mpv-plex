@@ -152,7 +152,7 @@ main_dependencies = [
     }, {
         'name': 'posix',
         'desc': 'POSIX environment',
-        'func': check_statement(['unistd.h'], 'long x = _POSIX_VERSION'),
+        'func': check_true,
     }, {
         'name': '--android',
         'desc': 'Android environment',
@@ -454,17 +454,22 @@ audio_output_features = [
         'desc': 'ALSA audio output',
         'func': check_pkg_config('alsa', '>= 1.0.18'),
     }, {
+        'name': '--avfoundation',
+        'desc': 'AVFoundation audio output',
+        'deps': 'atomics',
+        'func': check_cc(framework_name=['AVFoundation', 'CoreMedia', 'AudioToolbox']),
+    }, {
         'name': '--coreaudio',
         'desc': 'CoreAudio audio output',
         'func': check_cc(
             fragment=load_fragment('coreaudio.c'),
-            framework_name=['CoreFoundation', 'CoreAudio', 'AudioUnit', 'AudioToolbox'])
+            framework_name=['CoreFoundation', 'CoreAudio', 'AudioUnit', 'AudioToolbox', 'CoreText'])
     }, {
         'name': '--audiounit',
         'desc': 'AudioUnit output for iOS',
         'func': check_cc(
             fragment=load_fragment('audiounit.c'),
-            framework_name=['Foundation', 'AudioToolbox'])
+            framework_name=['Foundation', 'AudioToolbox', 'CoreVideo', 'AVFoundation', 'CoreText', 'OpenGLES'])
     }, {
         'name': '--wasapi',
         'desc': 'WASAPI audio output',
@@ -715,11 +720,7 @@ video_output_features = [
     } , {
         'name': '--ios-gl',
         'desc': 'iOS OpenGL ES hardware decoding interop support',
-        'func': check_cc(
-            fragment=load_fragment('ios_eagl.m'),
-            framework_name=['OpenGLES'],
-            compile_filename='ios_eagl.m'
-        )
+        'func': check_true,
     } , {
         'name': '--plain-gl',
         'desc': 'OpenGL without platform-specific code (e.g. for libmpv)',
