@@ -258,6 +258,11 @@ static double get_delay(struct ao *ao)
     return delay;
 }
 
+static void get_state(struct ao *ao, struct mp_pcm_state *state)
+{
+    state->delay = get_delay(ao);
+}
+
 #define OPT_BASE_STRUCT struct priv
 
 const struct ao_driver audio_out_avfoundation = {
@@ -266,8 +271,7 @@ const struct ao_driver audio_out_avfoundation = {
     .uninit         = uninit,
     .init           = init,
     .reset          = stop,
-    .resume         = start,
-    .pause          = pause_no_flush,
-    .get_delay      = get_delay,
+    .start          = start,
+    .get_state      = get_state,
     .priv_size      = sizeof(struct priv),
 };
