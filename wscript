@@ -456,7 +456,6 @@ audio_output_features = [
     }, {
         'name': '--avfoundation',
         'desc': 'AVFoundation audio output',
-        'deps': 'atomics',
         'func': check_cc(framework_name=['AVFoundation', 'CoreMedia', 'AudioToolbox']),
     }, {
         'name': '--coreaudio',
