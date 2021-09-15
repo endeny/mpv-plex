@@ -1,0 +1,9 @@
+!version: 1.2
+
+ios-client:
+  sha: 89a734688b41cb8bba4f7897de9073c1a68517f6
+  configs:
+    - arm64-apple-darwin-ios
+    - x86_64-apple-darwin-iossim
+    - arm64-apple-darwin-tvos
+    - x86_64-apple-darwin-tvossim
