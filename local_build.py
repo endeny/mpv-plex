@@ -303,7 +303,7 @@ class LocalBuilder:
 
 
     dylib = self.build_dir(target) / "libmpv.dylib"
-    if dylib.is_file:
+    if dylib.is_file():
       os.remove(dylib)
 
     build_args = []
