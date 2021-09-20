@@ -101,10 +101,9 @@ class LocalBuilder:
     self.create_xcframework(targets)
 
   def create_xcframework(self, targets: List[str]) -> None:
-    try:
-      rmtree(self.output / "PlexMPV.xcframework")
-    except:
-      pass
+    xcframework = self.output / "PlexMPV.xcframework"
+    if xcframework.is_dir():
+      rmtree(xcframework)
 
     cmd = ["xcrun", "xcodebuild", "-create-xcframework"]
     for target in targets:
@@ -117,7 +116,7 @@ class LocalBuilder:
 
     cmd += [
       "-output",
-      str(self.output / "PlexMPV.xcframework"),
+      str(xcframework),
     ]
 
     print(f"> {' '.join(cmd)}")
@@ -180,17 +179,25 @@ class LocalBuilder:
 
   def build_env(self, target: str) -> Dict:
 
-    deployment_flag = (
+    wrapper_flags = (
       "-miphoneos-version-min=12.4" if "ios" in target else "-mtvos-version-min=12.4"
     )
+
+    debug_flags = ""
+    # We need to have bitcode for tvOS in order to link.
+    if "tvos" in target:
+      wrapper_flags += " -fembed-bitcode"
+    else:
+      # And these flags are not compatible with bitcode of course.
+      debug_flags = "-gdwarf-aranges -ffunction-sections -fdata-sections"
 
     environment = {
       "CC": f"{BUILD_TARGET[target]}-clang",
       "CXX": f"{BUILD_TARGET[target]}-clang++",
-      "PLEX_WRAPPER_FLAGS": deployment_flag,
+      "PLEX_WRAPPER_FLAGS": wrapper_flags,
       "PKG_CONFIG_PATH": self.pkg_config_path(target),
       "LDFLAGS": self.ld_flags(target),
-      "CFLAGS": "-Og -g2 -Xclang -debug-info-kind=limited -gdwarf-aranges -ffunction-sections -fdata-sections -fno-omit-frame-pointers",
+      "CFLAGS": f"-Og -g2 -Xclang -debug-info-kind=limited -fno-omit-frame-pointer {debug_flags}",
     }
 
     return environment
@@ -208,6 +215,12 @@ class LocalBuilder:
     # strip it
     subprocess.run(["strip", "-STx", dylib_path])
 
+  # This is a pretty sad function that takes the headers from mpv and
+  # ffmpeg and flatterns them. I.e. puts them all in the same directory
+  # The reason for this is that a framework can't have several subdirectories
+  # within the Headers directory. So we need to edit the headers and
+  # put them all in the same dir.
+  #
   def mistreat_headers(self, target: str, dest: Path) -> None:
     src_inc = self.deps_dir(target) / "ffmpeg" / "include"
 
@@ -288,10 +301,10 @@ class LocalBuilder:
         check=True,
       )
 
-    try:
-      os.remove(self.build_dir(target) / "libmpv.dylib")
-    except:
-      pass
+
+    dylib = self.build_dir(target) / "libmpv.dylib"
+    if dylib.is_file:
+      os.remove(dylib)
 
     build_args = []
     if self.args.verbose:
