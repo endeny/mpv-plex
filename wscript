@@ -516,14 +516,17 @@ video_output_features = [
         'func': check_statement('sys/mman.h',
                                 'memfd_create("mpv", MFD_CLOEXEC | MFD_ALLOW_SEALING)')
     } , {
-        'name': '--x11',
-        'desc': 'X11',
-        'deps': 'gpl',
+        'name': '--x11-no-gpl',
+        'desc': 'X11 Without GPL',
         'func': check_pkg_config('x11',         '>= 1.0.0',
                                  'xscrnsaver',  '>= 1.0.0',
                                  'xext',        '>= 1.0.0',
                                  'xinerama',    '>= 1.0.0',
                                  'xrandr',      '>= 1.2.0'),
+    } , {
+        'name': '--x11',
+        'desc': 'X11',
+        'deps': 'gpl && x11-no-gpl',
     } , {
         'name': '--xv',
         'desc': 'Xv video output',
@@ -630,12 +633,12 @@ video_output_features = [
     }, {
         'name': '--vaapi',
         'desc': 'VAAPI acceleration',
-        'deps': 'libdl && (x11 || wayland || egl-drm)',
+        'deps': 'libdl && (x11-no-gpl || wayland || egl-drm)',
         'func': check_pkg_config('libva', '>= 1.1.0'),
     }, {
         'name': '--vaapi-x11',
         'desc': 'VAAPI (X11 support)',
-        'deps': 'vaapi && x11',
+        'deps': 'vaapi && x11-no-gpl',
         'func': check_pkg_config('libva-x11', '>= 1.1.0'),
     }, {
         'name': '--vaapi-wayland',
