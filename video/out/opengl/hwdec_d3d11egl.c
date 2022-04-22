@@ -102,7 +102,7 @@ static int init(struct ra_hwdec *hw)
 
     const char *exts = eglQueryString(egl_display, EGL_EXTENSIONS);
     if (!exts || !strstr(exts, "EGL_ANGLE_d3d_share_handle_client_buffer") ||
-        !gl_check_extension(exts, "EGL_ANGLE_stream_producer_d3d_texture") ||
+        !strstr(exts, "EGL_ANGLE_stream_producer_d3d_texture_nv12") ||
         !(strstr(gl->extensions, "GL_OES_EGL_image_external_essl3") ||
           gl->es == 200) ||
         !strstr(exts, "EGL_EXT_device_query") ||
@@ -120,9 +120,9 @@ static int init(struct ra_hwdec *hw)
     p->StreamConsumerGLTextureExternalAttribsNV =
         (void *)eglGetProcAddress("eglStreamConsumerGLTextureExternalAttribsNV");
     p->CreateStreamProducerD3DTextureANGLE =
-        (void *)eglGetProcAddress("eglCreateStreamProducerD3DTextureANGLE");
+        (void *)eglGetProcAddress("eglCreateStreamProducerD3DTextureNV12ANGLE");
     p->StreamPostD3DTextureANGLE =
-        (void *)eglGetProcAddress("eglStreamPostD3DTextureANGLE");
+        (void *)eglGetProcAddress("eglStreamPostD3DTextureNV12ANGLE");
 
     if (!p->CreateStreamKHR || !p->DestroyStreamKHR ||
         !p->StreamConsumerAcquireKHR || !p->StreamConsumerReleaseKHR ||
@@ -178,7 +178,7 @@ static int init(struct ra_hwdec *hw)
     ID3D10Multithread_SetMultithreadProtected(multithread, TRUE);
     ID3D10Multithread_Release(multithread);
 
-    static const int subfmts[] = {IMGFMT_NV12, IMGFMT_P010, 0};
+    static const int subfmts[] = {IMGFMT_NV12, 0};
     p->hwctx = (struct mp_hwdec_ctx){
         .driver_name = hw->driver->name,
         .av_device_ref = d3d11_wrap_device_ref(p->d3d11_device),
@@ -216,8 +216,7 @@ static int mapper_init(struct ra_hwdec_mapper *mapper)
     ra_get_imgfmt_desc(mapper->ra, mapper->src_params.hw_subfmt, &desc);
 
     // ANGLE hardcodes the list of accepted formats. This is a subset.
-    if ((mapper->src_params.hw_subfmt != IMGFMT_NV12 &&
-         mapper->src_params.hw_subfmt != IMGFMT_P010) ||
+    if (mapper->src_params.hw_subfmt != IMGFMT_NV12 ||
         desc.num_planes < 1 || desc.num_planes > 2)
     {
         MP_FATAL(mapper, "Format not supported.\n");
