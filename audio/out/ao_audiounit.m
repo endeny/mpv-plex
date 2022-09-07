@@ -141,6 +141,8 @@ static bool init_audiounit(struct ao *ao)
     CHECK_CA_ERROR_L(coreaudio_error_component,
                      "unable to initialize audio unit");
 
+    MP_VERBOSE(ao, "setting audio output format...\n");
+
     err = au_get_ary(p->audio_unit, kAudioUnitProperty_AudioChannelLayout, kAudioUnitScope_Output,
                      0, (void**)&layout, &size);
     CHECK_CA_ERROR_L(coreaudio_error_audiounit,
