@@ -90,23 +90,29 @@ static bool init_audiounit(struct ao *ao)
     err = AudioUnitInitialize(p->audio_unit);
     CHECK_CA_ERROR_L(coreaudio_error_component,
                      "unable to initialize audio unit");
+                     
+    MP_VERBOSE(ao, "setting audio output format...\n");
 
     if (af_fmt_is_spdif(ao->format) || instance.outputNumberOfChannels <= 2) {
         ao->channels = (struct mp_chmap)MP_CHMAP_INIT_STEREO;
+        MP_VERBOSE(ao, "setting standard stereo output\n");
     } else {
         port = instance.currentRoute.outputs.firstObject;
         if (port.channels.count == 2 &&
-            port.channels[0].channelLabel == kAudioChannelLabel_Unknown) {
+            (port.channels[0].channelLabel == kAudioChannelLabel_Unknown
+             || port.portType == AVAudioSessionPortHDMI)) {
             // Special case when using an HDMI adapter. The iOS device will
             // perform SPDIF conversion for us, so send all available channels
             // using the AC3 mapping.
             ao->channels = (struct mp_chmap)MP_CHMAP6(FL, FC, FR, SL, SR, LFE);
+            MP_VERBOSE(ao, "setting special case HDMI output format\n");
         } else {
             ao->channels.num = (uint8_t)port.channels.count;
             for (AVAudioSessionChannelDescription *ch in port.channels) {
               ao->channels.speaker[ch.channelNumber - 1] =
                   ca_label_to_mp_speaker_id(ch.channelLabel);
             }
+            MP_VERBOSE(ao, "using standard channel mapping output format\n");
         }
     }
 
