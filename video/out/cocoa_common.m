@@ -771,8 +771,6 @@ static void resize_event(struct vo *vo)
     s->frame_w = s->frame_h = 0;
     pthread_mutex_unlock(&s->lock);
 
-    [s->nsgl_ctx update];
-
     vo_wakeup(vo);
 }
 
@@ -832,6 +830,12 @@ static int vo_cocoa_check_events(struct vo *vo)
         vo->dheight = s->vo_dheight;
     }
     pthread_mutex_unlock(&s->lock);
+
+    if (events & VO_EVENT_RESIZE) {
+        run_on_main_thread(vo, ^{
+            [s->nsgl_ctx update];
+        });
+    }
 
     return events;
 }
