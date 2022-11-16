@@ -221,6 +221,8 @@ static void start(struct ao *ao)
 
     p->device_latency = [instance outputLatency];
 
+    MP_VERBOSE(ao, "set latency: %f + %f -> %f\n", [instance outputLatency], [instance IOBufferDuration], p->device_latency);
+
     OSStatus err = AudioOutputUnitStart(p->audio_unit);
     CHECK_CA_WARN("can't start audio unit");
 }
