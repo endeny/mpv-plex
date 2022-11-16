@@ -221,6 +221,7 @@ static void start(struct ao *ao)
     AVAudioSession *instance = AVAudioSession.sharedInstance;
 
     p->device_latency = [instance outputLatency] + [instance IOBufferDuration];
+    MP_VERBOSE(ao, "set latency: %f + %f -> %f\n", [instance outputLatency], [instance IOBufferDuration], p->device_latency);
 
     OSStatus err = AudioOutputUnitStart(p->audio_unit);
     CHECK_CA_WARN("can't start audio unit");
