@@ -1829,8 +1829,15 @@ static const char *const mkv_sub_tag[][2] = {
     { "D_WEBVTT/CAPTIONS",  "webvtt-webm"},
     { "S_TEXT/WEBVTT",      "webvtt"},
     { "S_DVBSUB",           "dvb_subtitle"},
+    { "S_ARIBSUB",          "arib_caption"},
     {0}
 };
+
+static void avcodec_par_destructor(void *p)
+{
+    if (p)
+        avcodec_parameters_free(p);
+}
 
 static int demux_mkv_open_sub(demuxer_t *demuxer, mkv_track_t *track)
 {
@@ -1859,6 +1866,45 @@ static int demux_mkv_open_sub(demuxer_t *demuxer, mkv_track_t *track)
     }
     sh->codec->extradata = track->private_data;
     sh->codec->extradata_size = track->private_size;
+
+    if (!strcmp(sh->codec->codec, "arib_caption")) {
+        struct AVCodecParameters **lav = talloc_ptrtype(track, lav);
+        if (!lav)
+            return 1;
+
+        talloc_set_destructor(lav, avcodec_par_destructor);
+
+        *lav = sh->codec->lav_codecpar = avcodec_parameters_alloc();
+        if (!sh->codec->lav_codecpar)
+            return 1;
+
+        sh->codec->lav_codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
+        sh->codec->lav_codecpar->codec_id = AV_CODEC_ID_ARIB_CAPTION;
+
+        int component_tag = track->private_data[0];
+        int data_component_id = AV_RB16(track->private_data + 1);
+        switch (data_component_id) {
+        case 0x0008:
+            // [0x30..0x37] are component tags utilized for
+            // non-mobile captioning service ("profile A").
+            if (component_tag >= 0x30 && component_tag <= 0x37)
+                sh->codec->lav_codecpar->profile = FF_PROFILE_ARIB_PROFILE_A;
+            break;
+        case 0x0012:
+            // component tag 0x87 signifies a mobile/partial reception
+            // (1seg) captioning service ("profile C").
+            if (component_tag == 0x87)
+                sh->codec->lav_codecpar->profile = FF_PROFILE_ARIB_PROFILE_C;
+            break;
+        }
+        if (sh->codec->lav_codecpar->profile == FF_PROFILE_UNKNOWN)
+            MP_WARN(demuxer, "ARIB caption profile %02x / %04x not supported.\n",
+                    component_tag, data_component_id);
+
+        talloc_free(track->private_data);
+        track->private_data = NULL;
+        track->private_size = 0;
+    }
 
     demux_add_sh_stream(demuxer, sh);
 
