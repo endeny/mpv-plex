@@ -1300,7 +1300,6 @@ if vulkan.found()
     dependencies += vulkan
     features += 'vulkan'
     sources += files('video/out/vulkan/context.c',
-                     'video/out/vulkan/context_display.c',
                      'video/out/vulkan/utils.c')
 endif
 
@@ -1318,6 +1317,16 @@ endif
 
 if vulkan.found() and x11['use']
      sources += files('video/out/vulkan/context_xlib.c')
+endif
+
+features += {'vk_khr_display': false}
+if features['vulkan']
+    features += {'vk_khr_display': cc.has_function('vkCreateDisplayPlaneSurfaceKHR', prefix: '#include <vulkan/vulkan_core.h>',
+                                                   dependencies: [vulkan])}
+endif
+
+if features['vk_khr_display']
+    sources += files('video/out/vulkan/context_display.c')
 endif
 
 
