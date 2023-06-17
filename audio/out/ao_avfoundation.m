@@ -45,9 +45,10 @@ struct API_AVAILABLE(macos(10.13), ios(11.0)) priv {
     AVPacket *pkt;
     AudioStreamBasicDescription asbd;
     double enqueued;
+    int spatialize;
 };
 
-#define PRIV_SIZE (sizeof(void*) * 5 + sizeof(AudioStreamBasicDescription) + sizeof(double))
+#define PRIV_SIZE (sizeof(void*) * 5 + sizeof(AudioStreamBasicDescription) + sizeof(double) + sizeof(long))
 
 
 static bool enqueue_buf(struct ao *ao, void *buf, int bufsize,
@@ -250,7 +251,7 @@ static bool init_renderer(struct ao *ao) API_AVAILABLE(macos(10.13), ios(11.0))
 
 #if defined(__IPHONE_15_0) || defined(__MAC_12_0)
     if (@available(tvOS 15.0, iOS 15.0, macOS 12.0, *)) {
-        p->renderer.allowedAudioSpatializationFormats = AVAudioSpatializationFormatMonoStereoAndMultichannel;
+        p->renderer.allowedAudioSpatializationFormats = p->spatialize;
     }
 #endif
 
@@ -439,4 +440,16 @@ const struct ao_driver audio_out_avfoundation = {
     .list_devs      = ca_get_device_list,
 #endif
     .priv_size      = PRIV_SIZE,
+    .options   = (const struct m_option[]) {
+        {"spatialize", OPT_CHOICE(spatialize,
+            {"none", AVAudioSpatializationFormatNone},
+            {"mono", 0x01UL},
+            {"stereo", 0x02UL},
+            {"monostereo", AVAudioSpatializationFormatMonoAndStereo},
+            {"multichannel", AVAudioSpatializationFormatMultichannel},
+            {"all", AVAudioSpatializationFormatMonoStereoAndMultichannel}
+        )},
+        {0}
+    },
+    .options_prefix = "avfoundation",
 };
