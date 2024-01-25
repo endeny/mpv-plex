@@ -303,6 +303,21 @@ darwin = host_machine.system() == 'darwin'
 win32 = host_machine.system() == 'cygwin' or host_machine.system() == 'windows'
 posix = not win32
 
+# Narrow down the darwin systems to iOS, tvOS or macOS
+if host_machine.system() == 'darwin'
+    is_ios = cc.get_define('TARGET_OS_IPHONE',
+        prefix: '#include <TargetConditionals.h>') == '1'
+    is_tvos = cc.get_define('TARGET_OS_TV',
+        prefix: '#include <TargetConditionals.h>') == '1'
+
+    # Assume it's macOS if it's neither iOS or tvOS
+    is_macos = not is_ios and not is_tvos
+else
+    is_ios = false
+    is_tvos = false
+    is_macos = false
+endif
+
 features += {'darwin': darwin}
 features += {'posix': posix}
 features += {'dos-paths': win32, 'win32': win32}
@@ -418,6 +433,10 @@ if posix
                      'osdep/poll_wrapper.c',
                      'osdep/terminal-unix.c',
                      'sub/filter_regex.c')
+endif
+
+if is_ios or is_tvos
+    subprocess_source = files('osdep/subprocess-dummy.c')
 endif
 
 if posix and not features['cocoa']
@@ -1303,6 +1322,17 @@ if features['vulkan'] and features['x11']
      sources += files('video/out/vulkan/context_xlib.c')
 endif
 
+if host_machine.system() == 'darwin'
+    moltenvk = get_option('moltenvk').require(
+        features['vulkan'],
+        error_message: 'vulkan or moltenvk header could not be found!',
+    )
+    features += {'moltenvk': moltenvk.allowed()}
+    if features['vulkan'] and features['moltenvk']
+        sources += files('video/out/vulkan/context_moltenvk.m')
+    endif
+endif
+
 features += {'vk-khr-display': vulkan.type_name() == 'internal' or
                                cc.has_function('vkCreateDisplayPlaneSurfaceKHR', prefix: '#include <vulkan/vulkan_core.h>',
                                                dependencies: [vulkan])}
@@ -1482,7 +1512,7 @@ features += {'videotoolbox-pl': videotoolbox_pl.allowed()}
 if features['videotoolbox-gl'] or features['videotoolbox-pl'] or features['ios-gl']
     sources += files('video/out/hwdec/hwdec_vt.c')
 endif
-if features['videotoolbox-gl']
+if features['videotoolbox-gl'] and is_macos
     sources += files('video/out/hwdec/hwdec_mac_gl.c')
 endif
 if features['videotoolbox-pl']

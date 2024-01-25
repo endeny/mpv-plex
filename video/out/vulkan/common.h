@@ -25,6 +25,9 @@
 #if HAVE_COCOA
 #define VK_USE_PLATFORM_METAL_EXT
 #endif
+#if HAVE_MOLTENVK
+#include <MoltenVK/mvk_vulkan.h>
+#endif
 
 #include <libplacebo/vulkan.h>
 
