@@ -112,6 +112,14 @@ static bool moltenvk_reconfig(struct ra_ctx *ctx)
 
 static int moltenvk_control(struct ra_ctx *ctx, int *events, int request, void *arg)
 {
+    struct priv *p = ctx->priv;
+
+    if (*events & VO_EVENT_RESIZE)
+    {
+        ra_vk_ctx_resize(ctx, ctx->vo->dwidth, ctx->vo->dheight);
+        return VO_TRUE;
+    }
+
     return VO_NOTIMPL;
 }
 
