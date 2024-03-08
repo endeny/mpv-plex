@@ -1343,8 +1343,10 @@ void vo_event(struct vo *vo, int event)
     struct vo_internal *in = vo->in;
     mp_mutex_lock(&in->lock);
     if ((in->queued_events & event & VO_EVENTS_USER) != (event & VO_EVENTS_USER))
+        MP_VERBOSE(vo, "### 1346 - vo.c: %d\n", event);
         wakeup_core(vo);
     if (event)
+        MP_VERBOSE(vo, "### 1349 - vo.c: %d\n", event);
         wakeup_locked(vo);
     in->queued_events |= event;
     in->internal_events |= event;

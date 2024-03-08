@@ -123,7 +123,7 @@ static int moltenvk_control(struct ra_ctx *ctx, int *events, int request, void *
 {
     struct priv *p = ctx->priv;
 
-    MP_MSG(ctx, MSGL_V, "Width: %d, Height: %d ### Some event: %d\n", ctx->vo->dwidth, ctx->vo->dheight, events);
+    // MP_MSG(ctx, MSGL_V, "Width: %d, Height: %d ### Some event: %d\n", ctx->vo->dwidth, ctx->vo->dheight, events);
 
     if ((*events & VO_EVENT_RESIZE) == VO_EVENT_RESIZE)
     {

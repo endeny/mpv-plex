@@ -1141,20 +1141,27 @@ static int query_format(struct vo *vo, int format)
 
 static void resize(struct vo *vo)
 {
+    MP_VERBOSE(vo, "### vo_gpu_next.c 1144: %dx%d)\n", vo->dwidth, vo->dheight);
+
     struct priv *p = vo->priv;
     struct mp_rect src, dst;
     struct mp_osd_res osd;
     vo_get_src_dst_rects(vo, &src, &dst, &osd);
     if (vo->dwidth && vo->dheight) {
+        MP_VERBOSE(vo, "### vo_gpu_next.c 1151: %dx%d)\n", vo->dwidth, vo->dheight);
         gpu_ctx_resize(p->context, vo->dwidth, vo->dheight);
         vo->want_redraw = true;
     }
 
+    MP_VERBOSE(vo, "### vo_gpu_next.c 1156 - mp_rect_equals(&p->src, &src): %s\n", mp_rect_equals(&p->src, &src) ? "true" : "false");
+    MP_VERBOSE(vo, "### vo_gpu_next.c 1156 - mp_rect_equals(&p->dst, &dst): %s\n", mp_rect_equals(&p->dst, &dst) ? "true" : "false");
+    MP_VERBOSE(vo, "### vo_gpu_next.c 1156 -  osd_res_equals(p->osd_res, osd): %s\n",  osd_res_equals(p->osd_res, osd) ? "true" : "false");
     if (mp_rect_equals(&p->src, &src) &&
         mp_rect_equals(&p->dst, &dst) &&
         osd_res_equals(p->osd_res, osd))
         return;
 
+    MP_VERBOSE(vo, "### vo_gpu_next.c 1161: %dx%d)\n", vo->dwidth, vo->dheight);
     p->osd_sync++;
     p->osd_res = osd;
     p->src = src;
@@ -1427,6 +1434,10 @@ static inline void copy_frame_info_to_mp(struct frame_info *pl,
 static int control(struct vo *vo, uint32_t request, void *data)
 {
     struct priv *p = vo->priv;
+
+    
+    if (events & VO_EVENT_RESIZE)
+        MP_VERBOSE(vo, "### vo_gpu_next.c 1438: VO_EVENT_RESIZE %d)\n", event);
 
     switch (request) {
     case VOCTRL_SET_PANSCAN:
