@@ -46,7 +46,7 @@ static bool moltenvk_reconfig(struct ra_ctx *ctx);
     _ra_ctx->vo->dwidth = s.width;
     _ra_ctx->vo->dheight = s.height;
 
-    MP_MSG(ctx, MSGL_V, "Width: %f, Height: %f ### Triggered event\n", s.width, s.height);
+    MP_MSG(_ra_ctx, MSGL_V, "Width: %f, Height: %f ### Triggered event\n", s.width, s.height);
 
     vo_event(_ra_ctx->vo, VO_EVENT_RESIZE | VO_EVENT_EXPOSE);
     moltenvk_reconfig(_ra_ctx);
@@ -123,11 +123,11 @@ static int moltenvk_control(struct ra_ctx *ctx, int *events, int request, void *
 {
     struct priv *p = ctx->priv;
 
-    MP_MSG(ctx, MSGL_V, "Width: %f, Height: %f ### Some event: %d\n", ctx->vo->dwidth, ctx->vo->dheight, events);
+    MP_MSG(ctx, MSGL_V, "Width: %d, Height: %d ### Some event: %d\n", ctx->vo->dwidth, ctx->vo->dheight, events);
 
     if (*events & VO_EVENT_RESIZE)
     {
-        MP_MSG(ctx, MSGL_V, "Width: %f, Height: %f ### Resize event\n", ctx->vo->dwidth, ctx->vo->dheight);
+        MP_MSG(ctx, MSGL_V, "Width: %d, Height: %d ### Resize event\n", ctx->vo->dwidth, ctx->vo->dheight);
         ra_vk_ctx_resize(ctx, ctx->vo->dwidth, ctx->vo->dheight);
         return VO_TRUE;
     }
