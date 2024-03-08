@@ -119,17 +119,21 @@ static bool moltenvk_reconfig(struct ra_ctx *ctx)
     return true;
 }
 
+static bool resize(struct ra_ctx *ctx)
+{
+    return ra_vk_ctx_resize(ctx, ctx->vo->dwidth, ctx->vo->dheight);
+}
+
 static int moltenvk_control(struct ra_ctx *ctx, int *events, int request, void *arg)
 {
     struct priv *p = ctx->priv;
 
     // MP_MSG(ctx, MSGL_V, "Width: %d, Height: %d ### Some event: %d\n", ctx->vo->dwidth, ctx->vo->dheight, events);
 
-    if (*events & VO_EVENT_RESIZE)
-    {
+    if (*events & VO_EVENT_RESIZE) {
         MP_MSG(ctx, MSGL_V, "Width: %d, Height: %d ### Resize event\n", ctx->vo->dwidth, ctx->vo->dheight);
-        ra_vk_ctx_resize(ctx, ctx->vo->dwidth, ctx->vo->dheight);
-        return VO_TRUE;
+        if (!resize(ctx))
+            return VO_ERROR;
     }
 
     return VO_NOTIMPL;
