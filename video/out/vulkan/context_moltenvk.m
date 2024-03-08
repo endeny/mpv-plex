@@ -123,6 +123,8 @@ static int moltenvk_control(struct ra_ctx *ctx, int *events, int request, void *
 {
     struct priv *p = ctx->priv;
 
+    MP_MSG(ctx, MSGL_V, "Width: %f, Height: %f ### Some event: %d\n", ctx->vo->dwidth, ctx->vo->dheight, events);
+
     if (*events & VO_EVENT_RESIZE)
     {
         MP_MSG(ctx, MSGL_V, "Width: %f, Height: %f ### Resize event\n", ctx->vo->dwidth, ctx->vo->dheight);
