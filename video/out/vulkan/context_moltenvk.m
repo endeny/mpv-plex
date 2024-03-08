@@ -21,6 +21,7 @@
 
 #include "common.h"
 #include "context.h"
+#include "video/out/vo.h"
 #include "utils.h"
 
 static bool moltenvk_reconfig(struct ra_ctx *ctx);
@@ -40,7 +41,11 @@ static bool moltenvk_reconfig(struct ra_ctx *ctx);
 
 - (void)layoutSublayersOfLayer: (CALayer*) layer
 {
-    moltenvk_reconfig(_ra_ctx);
+    CAMetalLayer *metalLayer = (CAMetalLayer *)layer;
+    CGSize s = metalLayer.drawableSize;
+    _ra_ctx->vo->dwidth = s.width;
+    _ra_ctx->vo->dheight = s.height;
+    vo_event(_ra_ctx->vo, VO_EVENT_RESIZE | VO_EVENT_EXPOSE);
 }
 
 @end
