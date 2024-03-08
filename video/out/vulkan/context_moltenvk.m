@@ -45,7 +45,11 @@ static bool moltenvk_reconfig(struct ra_ctx *ctx);
     CGSize s = metalLayer.drawableSize;
     _ra_ctx->vo->dwidth = s.width;
     _ra_ctx->vo->dheight = s.height;
+
+    MP_MSG(ctx, MSGL_V, "Width: %f, Height: %f ### Triggered event\n", s.width, s.height);
+
     vo_event(_ra_ctx->vo, VO_EVENT_RESIZE | VO_EVENT_EXPOSE);
+    moltenvk_reconfig(_ra_ctx);
 }
 
 @end
@@ -121,6 +125,7 @@ static int moltenvk_control(struct ra_ctx *ctx, int *events, int request, void *
 
     if (*events & VO_EVENT_RESIZE)
     {
+        MP_MSG(ctx, MSGL_V, "Width: %f, Height: %f ### Resize event\n", ctx->vo->dwidth, ctx->vo->dheight);
         ra_vk_ctx_resize(ctx, ctx->vo->dwidth, ctx->vo->dheight);
         return VO_TRUE;
     }
