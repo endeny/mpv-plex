@@ -1435,10 +1435,6 @@ static int control(struct vo *vo, uint32_t request, void *data)
 {
     struct priv *p = vo->priv;
 
-    
-    if (events & VO_EVENT_RESIZE)
-        MP_VERBOSE(vo, "### vo_gpu_next.c 1438: VO_EVENT_RESIZE %d)\n", event);
-
     switch (request) {
     case VOCTRL_SET_PANSCAN:
         resize(vo);
@@ -1499,6 +1495,7 @@ static int control(struct vo *vo, uint32_t request, void *data)
             vo->want_redraw = true;
     }
     if (events & VO_EVENT_RESIZE)
+        MP_VERBOSE(vo, "### vo_gpu_next.c 1438: VO_EVENT_RESIZE %d)\n", events);
         resize(vo);
     if (events & VO_EVENT_EXPOSE)
         vo->want_redraw = true;
