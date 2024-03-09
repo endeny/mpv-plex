@@ -24,8 +24,6 @@
 #include "video/out/vo.h"
 #include "utils.h"
 
-static bool moltenvk_reconfig(struct ra_ctx *ctx);
-
 @interface MetalLayerDelegate : NSObject<CALayerDelegate>
 @property (nonatomic) struct ra_ctx *ra_ctx;
 - (id) initWithContext: (struct ra_ctx*) cxt;
@@ -123,11 +121,11 @@ static bool moltenvk_reconfig(struct ra_ctx *ctx)
     return true;
 }
 
-static bool resize(struct ra_ctx *ctx)
-{
-    MP_MSG(ctx, MSGL_V, "Width: %d, Height: %d ### called resize function\n", ctx->vo->dwidth, ctx->vo->dheight);
-    return ra_vk_ctx_resize(ctx, ctx->vo->dwidth, ctx->vo->dheight);
-}
+// static bool resize(struct ra_ctx *ctx)
+// {
+//     MP_MSG(ctx, MSGL_V, "Width: %d, Height: %d ### called resize function\n", ctx->vo->dwidth, ctx->vo->dheight);
+//     return ra_vk_ctx_resize(ctx, ctx->vo->dwidth, ctx->vo->dheight);
+// }
 
 static int moltenvk_control(struct ra_ctx *ctx, int *events, int request, void *arg)
 {
@@ -135,11 +133,11 @@ static int moltenvk_control(struct ra_ctx *ctx, int *events, int request, void *
 
     // MP_MSG(ctx, MSGL_V, "Width: %d, Height: %d ### Some event: %d\n", ctx->vo->dwidth, ctx->vo->dheight, events);
 
-    if (*events & VO_EVENT_RESIZE) {
-        MP_MSG(ctx, MSGL_V, "Width: %d, Height: %d ### Resize event\n", ctx->vo->dwidth, ctx->vo->dheight);
-        if (!resize(ctx))
-            return VO_ERROR;
-    }
+    // if (*events & VO_EVENT_RESIZE) {
+    //     MP_MSG(ctx, MSGL_V, "Width: %d, Height: %d ### Resize event\n", ctx->vo->dwidth, ctx->vo->dheight);
+    //     if (!resize(ctx))
+    //         return VO_ERROR;
+    // }
 
     return VO_NOTIMPL;
 }
