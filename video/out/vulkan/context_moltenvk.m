@@ -117,8 +117,9 @@ static bool moltenvk_reconfig(struct ra_ctx *ctx)
     // struct priv *p = ctx->priv;
     // CAMetalLayer *metalLayer = (CAMetalLayer *)p->layer;
     // CGSize s = metalLayer.drawableSize;
-    MP_MSG(ctx, MSGL_V, "Width: %d, Height: %d ### called moltenvk_reconfig\n", s.width, s.height);
+    // MP_MSG(ctx, MSGL_V, "Width: %d, Height: %d ### called moltenvk_reconfig\n", s.width, s.height);
     // ra_vk_ctx_resize(ctx, s.width, s.height);
+    MP_MSG(ctx, MSGL_V, "### called moltenvk_reconfig\n");
     return true;
 }
 
