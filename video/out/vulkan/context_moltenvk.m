@@ -19,54 +19,30 @@
 #include <QuartzCore/CAMetalLayer.h>
 #include <MoltenVK/mvk_vulkan.h>
 
+#include "osdep/macOS_swift.h"
 #include "common.h"
 #include "context.h"
 #include "video/out/vo.h"
 #include "utils.h"
 
-@interface MetalLayerDelegate : NSObject<CALayerDelegate>
-@property (nonatomic) struct ra_ctx *ra_ctx;
-- (id) initWithContext: (struct ra_ctx*) cxt;
-@end
-
-@implementation MetalLayerDelegate
-
-- (id)initWithContext: (struct ra_ctx*) ctx
-{
-    _ra_ctx = ctx;
-    return self;
-}
-
-- (void)layoutSublayersOfLayer: (CALayer*) layer
-{
-    CAMetalLayer *metalLayer = (CAMetalLayer *)layer;
-    CGSize s = metalLayer.drawableSize;
-    _ra_ctx->vo->dwidth = s.width;
-    _ra_ctx->vo->dheight = s.height;
-    ra_vk_ctx_resize(_ra_ctx, s.width, s.height);
-
-    MP_MSG(_ra_ctx, MSGL_V, "Width: %f, Height: %f ### Triggered event\n", s.width, s.height);
-
-    vo_event(_ra_ctx->vo, VO_EVENT_RESIZE | VO_EVENT_EXPOSE);
-    // moltenvk_reconfig(_ra_ctx);
-}
-
-@end
-
 struct priv {
     struct mpvk_ctx vk;
-    CAMetalLayer *layer;
-    MetalLayerDelegate *delegate;
+    MacCommon *vo_mac;
 };
 
 static void moltenvk_uninit(struct ra_ctx *ctx)
 {
     struct priv *p = ctx->priv;
-    p->layer.delegate = nil;
-    p->delegate.ra_ctx = nil;
-    p->delegate = nil;
+
     ra_vk_ctx_uninit(ctx);
     mpvk_uninit(&p->vk);
+    [p->vo_mac uninit:ctx->vo];
+}
+
+static void mac_vk_swap_buffers(struct ra_ctx *ctx)
+{
+    struct priv *p = ctx->priv;
+    [p->vo_mac swapBuffer];
 }
 
 static bool moltenvk_init(struct ra_ctx *ctx)
@@ -75,71 +51,65 @@ static bool moltenvk_init(struct ra_ctx *ctx)
     struct mpvk_ctx *vk = &p->vk;
     int msgl = ctx->opts.probing ? MSGL_V : MSGL_ERR;
 
-    if (ctx->vo->opts->WinID == -1) {
-        MP_MSG(ctx, msgl, "WinID missing\n");
-        goto fail;
-    }
-
     if (!mpvk_init(vk, ctx, VK_EXT_METAL_SURFACE_EXTENSION_NAME))
-        goto fail;
+        goto error;
 
-    p->layer = (__bridge CAMetalLayer *)(intptr_t)ctx->vo->opts->WinID;
-    VkMetalSurfaceCreateInfoEXT info = {
-         .sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT,
-         .pLayer = p->layer,
+    p->vo_mac = [[MacCommon alloc] init:ctx->vo];
+    if (!p->vo_mac)
+        goto error;
+
+    VkMetalSurfaceCreateInfoEXT mac_info = {
+        .sType = VK_STRUCTURE_TYPE_IOS_SURFACE_CREATE_INFO_MVK,
+        .pNext = NULL,
+        .flags = 0,
+        .pLayer = p->vo_mac.layer,
     };
 
-    struct ra_vk_ctx_params params = {0};
+    struct ra_vk_ctx_params params = {
+        .swap_buffers = mac_vk_swap_buffers,
+    };
 
     VkInstance inst = vk->vkinst->instance;
-    VkResult res = vkCreateMetalSurfaceEXT(inst, &info, NULL, &vk->surface);
+    VkResult res = vkCreateMetalSurfaceEXT(inst, &mac_info, NULL, &vk->surface);
     if (res != VK_SUCCESS) {
-        MP_MSG(ctx, msgl, "Failed creating MoltenVK surface\n");
-        goto fail;
+        MP_MSG(ctx, msgl, "Failed creating metal surface\n");
+        goto error;
     }
 
     if (!ra_vk_ctx_init(ctx, vk, params, VK_PRESENT_MODE_FIFO_KHR))
-        goto fail;
-
-    p->delegate = [[MetalLayerDelegate alloc] initWithContext: ctx];
-    p->layer.delegate = p->delegate;
+        goto error;
 
     return true;
-fail:
-    moltenvk_uninit(ctx);
+error:
+    if (p->vo_mac)
+        [p->vo_mac uninit:ctx->vo];
     return false;
-}
-
-static bool moltenvk_reconfig(struct ra_ctx *ctx)
-{
-    // struct priv *p = ctx->priv;
-    // CAMetalLayer *metalLayer = (CAMetalLayer *)p->layer;
-    // CGSize s = metalLayer.drawableSize;
-    // MP_MSG(ctx, MSGL_V, "Width: %d, Height: %d ### called moltenvk_reconfig\n", s.width, s.height);
-    // ra_vk_ctx_resize(ctx, s.width, s.height);
-    MP_MSG(ctx, MSGL_V, "### called moltenvk_reconfig\n");
-    return true;
 }
 
 static bool resize(struct ra_ctx *ctx)
 {
-    MP_MSG(ctx, MSGL_V, "Width: %d, Height: %d ### called resize function\n", ctx->vo->dwidth, ctx->vo->dheight);
     return ra_vk_ctx_resize(ctx, ctx->vo->dwidth, ctx->vo->dheight);
+}
+
+static bool moltenvk_reconfig(struct ra_ctx *ctx)
+{
+    struct priv *p = ctx->priv;
+    if (![p->vo_mac config:ctx->vo])
+        return false;
+    return true;
 }
 
 static int moltenvk_control(struct ra_ctx *ctx, int *events, int request, void *arg)
 {
     struct priv *p = ctx->priv;
-
-    // MP_MSG(ctx, MSGL_V, "Width: %d, Height: %d ### Some event: %d\n", ctx->vo->dwidth, ctx->vo->dheight, events);
+    int ret = [p->vo_mac control:ctx->vo events:events request:request data:arg];
 
     if (*events & VO_EVENT_RESIZE) {
-        MP_MSG(ctx, MSGL_V, "Width: %d, Height: %d ### Resize event\n", ctx->vo->dwidth, ctx->vo->dheight);
         if (!resize(ctx))
             return VO_ERROR;
     }
 
-    return VO_NOTIMPL;
+    return ret;
 }
 
 const struct ra_ctx_fns ra_ctx_vulkan_moltenvk = {
