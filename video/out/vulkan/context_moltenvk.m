@@ -41,15 +41,16 @@ static bool moltenvk_reconfig(struct ra_ctx *ctx);
 
 - (void)layoutSublayersOfLayer: (CALayer*) layer
 {
-    // CAMetalLayer *metalLayer = (CAMetalLayer *)layer;
-    // CGSize s = metalLayer.drawableSize;
+    CAMetalLayer *metalLayer = (CAMetalLayer *)layer;
+    CGSize s = metalLayer.drawableSize;
     // _ra_ctx->vo->dwidth = s.width;
     // _ra_ctx->vo->dheight = s.height;
+    ra_vk_ctx_resize(_ra_ctx, s.width, s.height);
 
-    // MP_MSG(_ra_ctx, MSGL_V, "Width: %f, Height: %f ### Triggered event\n", s.width, s.height);
+    MP_MSG(_ra_ctx, MSGL_V, "Width: %f, Height: %f ### Triggered event\n", s.width, s.height);
 
     // vo_event(_ra_ctx->vo, VO_EVENT_RESIZE | VO_EVENT_EXPOSE);
-    moltenvk_reconfig(_ra_ctx);
+    // moltenvk_reconfig(_ra_ctx);
 }
 
 @end
@@ -113,11 +114,11 @@ fail:
 
 static bool moltenvk_reconfig(struct ra_ctx *ctx)
 {
-    struct priv *p = ctx->priv;
-    CAMetalLayer *metalLayer = (CAMetalLayer *)p->layer;
-    CGSize s = metalLayer.drawableSize;
+    // struct priv *p = ctx->priv;
+    // CAMetalLayer *metalLayer = (CAMetalLayer *)p->layer;
+    // CGSize s = metalLayer.drawableSize;
     MP_MSG(ctx, MSGL_V, "Width: %d, Height: %d ### called moltenvk_reconfig\n", s.width, s.height);
-    ra_vk_ctx_resize(ctx, s.width, s.height);
+    // ra_vk_ctx_resize(ctx, s.width, s.height);
     return true;
 }
 
