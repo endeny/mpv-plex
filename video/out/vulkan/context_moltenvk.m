@@ -24,6 +24,12 @@
 #include "video/out/vo.h"
 #include "utils.h"
 
+struct priv {
+    struct mpvk_ctx vk;
+    CAMetalLayer *layer;
+    MetalLayerDelegate *delegate;
+};
+
 @interface MetalLayerDelegate : NSObject<CALayerDelegate>
 @property (nonatomic) struct ra_ctx *ra_ctx;
 - (id) initWithContext: (struct ra_ctx*) cxt;
@@ -54,11 +60,7 @@
 
 @end
 
-struct priv {
-    struct mpvk_ctx vk;
-    CAMetalLayer *layer;
-    MetalLayerDelegate *delegate;
-};
+
 
 static void moltenvk_uninit(struct ra_ctx *ctx)
 {
