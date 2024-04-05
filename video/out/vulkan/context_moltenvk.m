@@ -17,6 +17,7 @@
 
 #include <CoreGraphics/CoreGraphics.h>
 #include <QuartzCore/CAMetalLayer.h>
+#include <MoltenVK/mvk_vulkan.h>
 
 #include "common.h"
 #include "context.h"
@@ -118,7 +119,7 @@ static bool moltenvk_reconfig(struct ra_ctx *ctx)
 
 static int moltenvk_control(struct ra_ctx *ctx, int *events, int request, void *arg)
 {
-    struct priv *p = ctx->priv;
+    // struct priv *p = ctx->priv;
 
     if (*events & VO_EVENT_RESIZE)
     {
