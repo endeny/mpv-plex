@@ -17,7 +17,6 @@
 
 #include <CoreGraphics/CoreGraphics.h>
 #include <QuartzCore/CAMetalLayer.h>
-#include <MoltenVK/mvk_vulkan.h>
 
 #include "common.h"
 #include "context.h"
@@ -82,7 +81,9 @@ static bool moltenvk_init(struct ra_ctx *ctx)
 
     p->layer = (__bridge CAMetalLayer *)(intptr_t)ctx->vo->opts->WinID;
     VkMetalSurfaceCreateInfoEXT info = {
-         .sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT,
+         .sType = VK_STRUCTURE_TYPE_IOS_SURFACE_CREATE_INFO_MVK,
+         .pNext = NULL,
+         .flags = 0,
          .pLayer = p->layer,
     };
 
@@ -98,8 +99,8 @@ static bool moltenvk_init(struct ra_ctx *ctx)
     if (!ra_vk_ctx_init(ctx, vk, params, VK_PRESENT_MODE_FIFO_KHR))
         goto fail;
 
-    p->delegate = [[MetalLayerDelegate alloc] initWithContext: ctx];
-    p->layer.delegate = p->delegate;
+    // p->delegate = [[MetalLayerDelegate alloc] initWithContext: ctx];
+    // p->layer.delegate = p->delegate;
 
     return true;
 fail:
