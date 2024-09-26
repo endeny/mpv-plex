@@ -387,6 +387,7 @@ add_project_link_arguments(link_flags, language: ['c', 'objc'])
 # osdep
 cocoa = dependency('appleframeworks', modules: ['Cocoa', 'IOKit', 'QuartzCore'],
                    required: get_option('cocoa'))
+corefoundation = dependency('appleframeworks', modules: ['CoreFoundation'], required: false)
 features += {'cocoa': cocoa.found()}
 if features['cocoa']
     dependencies += cocoa
@@ -395,6 +396,8 @@ if features['cocoa']
                      'osdep/utils-mac.c',
                      'osdep/mac/app_bridge.m')
     main_fn_source = files('osdep/main-fn-mac.c')
+elif corefoundation.found()
+    sources += files('osdep/utils-mac.c')
 endif
 
 if posix
