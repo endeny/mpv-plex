@@ -810,11 +810,15 @@ if features['avfoundation']
     sources += files('audio/out/ao_avfoundation.m')
 endif
 
-coreaudio = dependency('appleframeworks', modules: ['CoreFoundation', 'CoreAudio',
-                       'AudioUnit', 'AudioToolbox'], required: get_option('coreaudio'))
-features += {'coreaudio': coreaudio.found()}
+coreaudio = {
+    'deps': dependency('appleframeworks', modules: ['CoreFoundation', 'CoreAudio',
+                       'AudioUnit', 'AudioToolbox'], required: get_option('coreaudio')),
+    'device': cc.has_header_symbol('CoreAudio/CoreAudio.h', 'AudioDeviceID',
+                                   required: get_option('coreaudio')),
+}
+features += {'coreaudio': coreaudio['deps'].found() and coreaudio['device']}
 if features['coreaudio']
-    dependencies += coreaudio
+    dependencies += coreaudio['deps']
     sources += files('audio/out/ao_coreaudio.c',
                      'audio/out/ao_coreaudio_exclusive.c',
                      'audio/out/ao_coreaudio_properties.c')
